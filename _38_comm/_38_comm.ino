@@ -1,3 +1,4 @@
+
 /*
  Chat  Server
 
@@ -21,6 +22,7 @@
 
 #include <SPI.h>
 #include <WiFi.h>
+#include <aJSON.h>
 
 char ssid[] = "38alleys";     //  your network SSID (name) 
 char pass[] = "3201999999";    // your network password
@@ -32,6 +34,8 @@ int status = WL_IDLE_STATUS;
 
 WiFiServer server(80);
 WiFiClient client;
+
+char json[] = "{\"id\":\"1\"}";
 
 boolean alreadyConnected = false; // whether or not the client was connected previously
 
@@ -53,11 +57,32 @@ void setup() {
   printWifiStatus();
  }
 
+#define BUFSIZE 255
+
 void loop() {
-  if(client.available()){  
-    char c1 = client.read();
-    Serial.print(c1);
-  }
+    
+//    char rspValue[1];
+//    rspValue[0] = rsp;
+//    
+//    char* idValue;
+//    
+//    aJsonObject* jsonObject1 = aJson.parse(rspValue);
+//    aJsonObject* personId1 = aJson.getObjectItem(jsonObject1, "id");
+//    idValue = personId1->valuestring;
+//    Serial.print("json rsp = ");
+//    Serial.print(rsp);
+//    Serial.print(" rspValue = ");
+//    Serial.print(rspValue);
+//    Serial.print("id = ");
+//    Serial.println(idValue);
+//    char* value;
+//    delay(1000);
+    
+//    aJsonObject* jsonObject = aJson.parse(json);
+//    aJsonObject* personId = aJson.getObjectItem(jsonObject, "id");
+//    value = personId->valuestring;
+//    Serial.print(value);
+    
 }
 
 
@@ -82,5 +107,43 @@ void printWifiStatus() {
     client.println("GET /service/person/5 HTTP/1.1");
     client.println("Host: h2lo-api.herokuapp.com");
     client.println();  
+    
+    
+    char clientLine[BUFSIZE];
+    int index = 0;
+    
+    while(client.connected()){
+      if(client.available()){  
+        Serial.println("available");
+        char c = client.read();
+        
+      //  fill buffer with url
+        if(c != '\n' && c != '\r'){
+  
+          // s if we run out of buffer, overwrite the end
+          if(index >= BUFSIZE) {
+            break;
+            //index = BUFSIZE -1;
+          }
+  
+          clientLine[index] = c;
+          index++;
+  
+  //          Serial.print("client-c: ");
+  //          Serial.println(c);
+          continue;
+        }
+        
+        
+      } // end if
+      String urlString = String(clientLine);
+      Serial.println(urlString);
+      client.stop();
+    } // end while
+    
+    
+    
+    
+    
   }
 }
