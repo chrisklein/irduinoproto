@@ -24,12 +24,14 @@
 
 char ssid[] = "38alleys";     //  your network SSID (name) 
 char pass[] = "3201999999";    // your network password
+char servername[] = "twitter.com";
 
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
 
 int status = WL_IDLE_STATUS;
 
-WiFiServer server(23);
+WiFiServer server(80);
+WiFiClient client;
 
 boolean alreadyConnected = false; // whether or not the client was connected previously
 
@@ -51,35 +53,19 @@ void setup() {
   printWifiStatus();
  }
 
-
 void loop() {
-  Serial.println("in loop");
-  // wait for a new client:
-  WiFiClient client = server.available();
-  // when the client sends the first byte, say hello:
-  if (client) {
-    if (!alreadyConnected) {
-      // clead out the input buffer:
-      client.flush();    
-      Serial.println("We have a new client");
-      client.println("Hello, client!"); 
-      alreadyConnected = true;
-    } 
-    if (client.available() > 0) {
-      // read the bytes incoming from the client:
-      char thisChar = client.read();
-      // echo the bytes back to the client:
-      server.write(thisChar);
-      //delay(1000);
-      // echo the bytes to the server as well:
-      Serial.write(thisChar);
-    }
-    if (client.available() == 0) {
-    Serial.write("Waiting, client!");
-    Serial.write("Waiting, client#2!");
-    delay(10000); 
-    }  
+  if(client.available()){  
+    char c1 = client.read();
+    Serial.print(c1);
   }
+  // wait for a new client.
+  
+//  Serial.print("printing client :");
+//  Serial.println(client);
+//  Serial.print("is client connected :");
+//  Serial.println(client.connected());
+
+  // when the client sends the first byte, say hello:
 }
 
 
@@ -98,4 +84,11 @@ void printWifiStatus() {
   Serial.print("signal strength (RSSI):");
   Serial.print(rssi);
   Serial.println(" dBm");
+  
+  if(client.connect(servername, 80)){
+    Serial.println("connected");
+    client.println("GET /1/statuses/user_timeline.xml?screen_name=arduino HTTP/1.1");
+    client.println(); 
+    
+  }
 }
