@@ -24,7 +24,7 @@
 
 char ssid[] = "38alleys";     //  your network SSID (name) 
 char pass[] = "3201999999";    // your network password
-char servername[] = "twitter.com";
+char servername[] = "h2lo-api.herokuapp.com";
 
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
 
@@ -58,14 +58,6 @@ void loop() {
     char c1 = client.read();
     Serial.print(c1);
   }
-  // wait for a new client.
-  
-//  Serial.print("printing client :");
-//  Serial.println(client);
-//  Serial.print("is client connected :");
-//  Serial.println(client.connected());
-
-  // when the client sends the first byte, say hello:
 }
 
 
@@ -87,8 +79,8 @@ void printWifiStatus() {
   
   if(client.connect(servername, 80)){
     Serial.println("connected");
-    client.println("GET /1/statuses/user_timeline.xml?screen_name=arduino HTTP/1.1");
-    client.println(); 
-    
+    client.println("GET /service/person/5 HTTP/1.1");
+    client.println("Host: h2lo-api.herokuapp.com");
+    client.println();  
   }
 }
