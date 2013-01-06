@@ -22,9 +22,16 @@ int status = WL_IDLE_STATUS;
 WiFiServer server(80);  // Connect to port 80
 WiFiClient client;      // Define our WifiClient
 
+const unsigned long requestInterval = 30*1000;    // delay between requests; 30 seconds
+
 char json[] = "{\"id\":\"1\"}";  // Sample json for testing aJSON
 
-boolean alreadyConnected = false; // whether or not the client was connected previously
+boolean requested;                     // whether you've made a request since connecting
+unsigned long lastAttemptTime = 0;     // last time you connected to the server, in milliseconds
+
+String currentLine = "";               // string to hold the text from server
+String personId = "";                  // string to hold the id of person json
+
 
 void setup() {
   // start serial port:
@@ -49,34 +56,23 @@ void setup() {
   if(isConnected){
     fetchData();
   }
- }
+}
 
 
 void loop() {
-    
-//    char rspValue[1];
-//    rspValue[0] = rsp;
-//    
-//    char* idValue;
-//    
-//    aJsonObject* jsonObject1 = aJson.parse(rspValue);
-//    aJsonObject* personId1 = aJson.getObjectItem(jsonObject1, "id");
-//    idValue = personId1->valuestring;
-//    Serial.print("json rsp = ");
-//    Serial.print(rsp);
-//    Serial.print(" rspValue = ");
-//    Serial.print(rspValue);
-//    Serial.print("id = ");
-//    Serial.println(idValue);
-//    char* value;
-//    delay(1000);
-    
-//    aJsonObject* jsonObject = aJson.parse(json);
-//    aJsonObject* personId = aJson.getObjectItem(jsonObject, "id");
-//    value = personId->valuestring;
-//    Serial.print(value);
-    
+  
+  checkConnectionToServer();
 }
+
+void checkConnectionToServer(){
+  if (millis() - lastAttemptTime > requestInterval) {
+    Serial.println("lost connection, attempting to reconnect");
+    // if we're not connected, and two minutes have passed since
+    // our last connection, then attempt to connect again:
+    connectToServer();
+  }
+}
+
 
 boolean connectToServer(){
   if(client.connect(servername, 80)){
@@ -86,6 +82,8 @@ boolean connectToServer(){
     client.println(); 
     return true;
   }
+  // note the time of this connect attempt:
+  lastAttemptTime = millis();
   return false;
 }
 
@@ -94,9 +92,12 @@ void fetchData(){
   int index = 0;
     
   while(client.connected()){
+    
     Serial.println("conneced loop");
     Serial.print("client available ? ");
     Serial.print(client.available());
+    Serial.println();
+    
     if(client.available()){  
 
       Serial.println("available");
@@ -139,3 +140,27 @@ void printWifiStatus() {
   Serial.print(rssi);
   Serial.println(" dBm");
 }
+
+
+
+//    char rspValue[1];
+//    rspValue[0] = rsp;
+//    
+//    char* idValue;
+//    
+//    aJsonObject* jsonObject1 = aJson.parse(rspValue);
+//    aJsonObject* personId1 = aJson.getObjectItem(jsonObject1, "id");
+//    idValue = personId1->valuestring;
+//    Serial.print("json rsp = ");
+//    Serial.print(rsp);
+//    Serial.print(" rspValue = ");
+//    Serial.print(rspValue);
+//    Serial.print("id = ");
+//    Serial.println(idValue);
+//    char* value;
+//    delay(1000);
+    
+//    aJsonObject* jsonObject = aJson.parse(json);
+//    aJsonObject* personId = aJson.getObjectItem(jsonObject, "id");
+//    value = personId->valuestring;
+//    Serial.print(value);
