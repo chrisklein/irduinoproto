@@ -30,7 +30,10 @@ boolean requested;                     // whether you've made a request since co
 unsigned long lastAttemptTime = 0;     // last time you connected to the server, in milliseconds
 
 String currentLine = "";               // string to hold the text from server
+String jsonString = "";                // string to hold the json
+boolean readingJsonString = false;     // if we're currently reading json
 String personId = "";                  // string to hold the id of person json
+boolean readingPersonId = false;       // if we're currently reading the tweet
 
 
 void setup() {
@@ -38,7 +41,7 @@ void setup() {
   Serial.begin(9600);
 
   // attempt to connect to Wifi network:
-  while ( status != WL_CONNECTED) { 
+  while (status != WL_CONNECTED) { 
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(ssid);
     status = WiFi.begin(ssid, pass);
@@ -52,20 +55,62 @@ void setup() {
   printWifiStatus();
 
   boolean isConnected = connectToServer();
-
-  if(isConnected){
-    fetchData();
-  }
+  // Not sure we need this yet.
+  // if(isConnected){ fetchData(); }
 }
 
 
 void loop() {
   if(client.connected()){
     // Loop code if client connected
+    
+    if(client.available()){
+      // client available code
+      fetchData();
+    }
+    
   }else{
     checkConnectionToServer();
   }
 }
+
+
+void fetchData(){
+  char inChar = client.read();
+
+  // add incoming byte to end of line:
+  currentLine += inChar; 
+
+  // if you get a newline, clear the line:
+  if (inChar == '\n') {
+    currentLine = "";
+  }  
+  
+  // if the current line starts with {, it will be
+  // followed by the json
+  if(currentLine.endsWith("{")){
+    // json is beginging.  Clear the json string:
+    readingJsonString = true;
+    jsonString = "";
+  }
+  
+  // if we're currently reading the bytes of our json,
+  // add them to the json String:
+  if(readingJsonString){
+    if (inChar != '}') {
+      jsonString += inChar;
+    } else {
+       // If we've got a }, we know we're at the end
+       // of our json (only in this instanc of course.
+       jsonString += inChar;
+       readingJsonString = false;
+       Serial.println(jsonString);
+       client.stop();
+    }
+  }
+  
+}
+
 
 void checkConnectionToServer(){
   if (millis() - lastAttemptTime > requestInterval) {
@@ -89,46 +134,6 @@ boolean connectToServer(){
   lastAttemptTime = millis();
   return false;
 }
-
-void fetchData(){
-  char clientLine[BUFSIZE];
-  int index = 0;
-    
-  while(client.connected()){
-    
-    Serial.println("conneced loop");
-    Serial.print("client available ? ");
-    Serial.print(client.available());
-    Serial.println();
-    
-    if(client.available()){  
-
-      Serial.println("available");
-      char c = client.read();
-
-      if(c != '\n' && c != '\r'){
-
-        // s if we run out of buffer, overwrite the end
-        if(index >= BUFSIZE) {
-          break;
-          //index = BUFSIZE -1;
-        }
-
-        clientLine[index] = c;
-        index++;
-        continue;
-      }
-       
-    }
-
-    String urlString = String(clientLine);
-    Serial.println(urlString);
-    client.stop();
-  }
-}
-
-
-
 
 
 void printWifiStatus() {
