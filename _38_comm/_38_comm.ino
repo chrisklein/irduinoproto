@@ -60,8 +60,11 @@ void setup() {
 
 
 void loop() {
-  
-  checkConnectionToServer();
+  if(client.connected()){
+    // Loop code if client connected
+  }else{
+    checkConnectionToServer();
+  }
 }
 
 void checkConnectionToServer(){
@@ -124,6 +127,10 @@ void fetchData(){
   }
 }
 
+
+
+
+
 void printWifiStatus() {
   // print the SSID of the network you're attached to:
   Serial.print("SSID: ");
@@ -140,8 +147,6 @@ void printWifiStatus() {
   Serial.print(rssi);
   Serial.println(" dBm");
 }
-
-
 
 //    char rspValue[1];
 //    rspValue[0] = rsp;
