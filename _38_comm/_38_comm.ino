@@ -11,8 +11,8 @@
 
 #define BUFSIZE 255 // For some reason 255 seems to be the magic number
 
-char ssid[] = "38alleys";     //  your network SSID (name) 
-char pass[] = "3201999999";    // your network password
+char ssid[] = "";     //  your network SSID (name) 
+char pass[] = "";    // your network password
 char servername[] = "h2lo-api.herokuapp.com";  // the server we're going to pull data from
 
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
